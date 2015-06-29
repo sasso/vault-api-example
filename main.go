@@ -22,21 +22,32 @@ func main() {
 	path := `secret/hello`
 	_, err = client.Logical().Write(path, map[string]interface{}{"audience": "world"})
 	if err != nil {
-		log.Fatal("error writing secret/hello: %s", err)
+		log.Fatal("error writing %s: %s", path, err)
 	} else {
 		log.Printf("wrote %s successfully", path)
 	}
 
 	secret, err := client.Logical().Read(path)
 	if err != nil {
-		log.Fatal("error reading secret/hello: %s", err)
+		log.Fatal("error reading %s: %s", path, err)
 	} else {
 		data, err := json.Marshal(secret.Data)
 		if err != nil {
-			log.Fatal("error decoding secret/hello: %s", err)
+			log.Fatal("error decoding %s: %s", path, err)
 		} else {
 			log.Printf("read %s as: %s", path, data)
 		}
 	}
 
+	_, err = client.Logical().Delete(path)
+	if err != nil {
+		log.Fatal("error deleting %s: %s", path, err)
+	} else {
+		secret, _ := client.Logical().Read(path)
+		if secret != nil {
+			log.Fatal("error deleting %s: still readable after delete", path)
+		} else {
+			log.Printf("deleted %s successfully", path)
+		}
+	}
 }
